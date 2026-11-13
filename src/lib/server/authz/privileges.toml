@@ -1,0 +1,199 @@
+[privileges."team.manage"]
+description = "Manage team master data"
+roles = ["admin"]
+resource = "system"
+audit = true
+
+[privileges."pec.manage"]
+description = "Manage PEC master data"
+roles = ["admin"]
+resource = "system"
+audit = true
+
+[privileges."pec.view"]
+description = "View PEC master data within allowed scope"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = false
+
+[privileges."team.view"]
+description = "View team master data within allowed scope"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = false
+
+[privileges."user.manage"]
+description = "Manage users, roles, and PEC allocations"
+roles = ["admin"]
+resource = "system"
+audit = true
+
+[privileges."user.profile.view"]
+description = "View the signed-in user's profile preferences"
+roles = ["admin", "barcode_print_manager"]
+resource = "user"
+audit = false
+
+[privileges."user.profile.update"]
+description = "Update the signed-in user's profile preferences"
+roles = ["admin", "barcode_print_manager"]
+resource = "user"
+audit = true
+
+[privileges."barcode.series.view"]
+description = "View barcode series next serials"
+roles = ["admin", "barcode_print_manager"]
+resource = "pec"
+relationship = "allocated_pec"
+audit = false
+
+[privileges."barcode.batch.view"]
+description = "View barcode batches within allowed scope"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = false
+
+[privileges."barcode.batch.print"]
+description = "Print next barcode range"
+roles = ["admin", "barcode_print_manager"]
+resource = "pec"
+relationship = "allocated_pec"
+audit = true
+
+[privileges."barcode.batch.reprint"]
+description = "Reprint an existing barcode batch"
+roles = ["admin", "barcode_print_manager"]
+resource = "pec"
+relationship = "allocated_pec"
+audit = true
+
+[privileges."barcode.sequence.reset"]
+description = "Set next serial for PEC-year"
+roles = ["admin"]
+resource = "pec"
+relationship = "allocated_pec"
+audit = true
+
+[privileges."settings.barcode_year.update"]
+description = "Change the global operational barcode year"
+roles = ["admin"]
+resource = "system"
+audit = true
+
+[privileges."barcode.range.reserve_offline"]
+description = "Reserve offline-issued barcode range"
+roles = ["admin", "barcode_print_manager"]
+resource = "pec"
+relationship = "allocated_pec"
+audit = true
+
+[privileges."printer_template.manage"]
+description = "Manage printer templates"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = true
+
+[privileges."qz.certificate.view"]
+description = "Fetch the VCMS QZ Tray signing certificate"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = false
+
+[privileges."qz.integration.view"]
+description = "View QZ Tray integration status and deployment guidance"
+roles = ["admin"]
+resource = "system"
+audit = false
+
+[privileges."qz.credentials.update"]
+description = "Update encrypted QZ Tray certificate and private key credentials"
+roles = ["admin"]
+resource = "system"
+audit = true
+
+[privileges."qz.message.sign"]
+description = "Sign QZ Tray websocket messages for direct printing"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = true
+
+[privileges."emr.patient.view"]
+description = "View EMR patient records and barcode lookup"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = false
+
+[privileges."emr.patient.create"]
+description = "Create EMR patient registrations and persist barcode-linked patient data"
+roles = ["admin", "barcode_print_manager"]
+resource = "pec"
+relationship = "allocated_pec"
+audit = true
+
+[privileges."emr.encounter.view"]
+description = "View EMR encounters by patient"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = false
+
+[privileges."emr.encounter.create"]
+description = "Create EMR encounters for a patient"
+roles = ["admin", "barcode_print_manager"]
+resource = "pec"
+relationship = "allocated_pec"
+audit = true
+
+[privileges."emr.care_pathway.view"]
+description = "View EMR care pathways by patient"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = false
+
+[privileges."emr.care_pathway.create"]
+description = "Create EMR care pathways for an encounter"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = true
+
+[privileges."emr.runtime.mobile_definition.view"]
+description = "Read active EMR definitions for mobile runtime sync"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = false
+
+[privileges."emr.builder.manage"]
+description = "Manage EMR note definition drafts and published versions"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = true
+
+[privileges."emr.dictionary.manage"]
+description = "Manage reusable EMR dictionary assets, drafts, and versions"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = true
+
+[privileges."emr.template.manage"]
+description = "Manage reusable openEHR template registry, Web Template cache, and runtime manifests"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = true
+
+[privileges."emr.aql.query"]
+description = "Execute curated openEHR AQL queries against the clinical data repository"
+roles = ["admin"]
+resource = "system"
+audit = true
+
+[privileges."terminology.view"]
+description = "Search and inspect configured clinical terminology concepts"
+roles = ["admin", "barcode_print_manager"]
+resource = "system"
+audit = false
+
+[privileges."emr.clinical_note.submit"]
+description = "Submit an EMR clinical note for an allocated PEC encounter"
+roles = ["admin", "barcode_print_manager"]
+resource = "pec"
+relationship = "allocated_pec"
+audit = true

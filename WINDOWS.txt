@@ -1,0 +1,93 @@
+VCMS Windows Operations
+=======================
+
+Use normal PowerShell as the current Windows user, from the project root.
+
+Start (builds with Vite):
+  PowerShell -ExecutionPolicy Bypass -File .\scripts\vcms-local-user.ps1 start
+
+Restart (also rebuilds):
+  PowerShell -ExecutionPolicy Bypass -File .\scripts\vcms-local-user.ps1 restart
+
+Stop:
+  PowerShell -ExecutionPolicy Bypass -File .\scripts\vcms-local-user.ps1 stop
+
+Status:
+  PowerShell -ExecutionPolicy Bypass -File .\scripts\vcms-local-user.ps1 status
+
+Logs:
+  PowerShell -ExecutionPolicy Bypass -File .\scripts\vcms-local-user.ps1 logs
+
+The app uses http://localhost:3000; ecosystem.config.cjs fixes the port.
+PM2 state: %LOCALAPPDATA%\vcms-pm2
+Configure ORIGIN="http://localhost:3000" and DEV_LOGIN_ENABLED="false" in .env.
+Use strong secrets and replace seeded passwords before real deployment.
+
+Backup (Windows/Linux, Node.js and Docker; no PowerShell script required):
+  npm run backup
+
+Backup both databases, roles, .env, project keys, deployment files, and PM2 state.
+Output: backups/<timestamp>.zip (Git ignored). Contains secrets; not encrypted.
+An uncompressed recovery copy is retained alongside the ZIP.
+Use protected storage and an off-machine copy.
+External keys/configuration:
+  npm run backup -- --include "C:\path\to\keys"
+Alternate output:
+  npm run backup -- --output "E:\secure-backups"
+
+Task at current-user logon:
+  PowerShell -ExecutionPolicy Bypass -File .\scripts\install-pm2-windows-startup-task-aiims.ps1 -TaskName "VCMS PM2 User"
+  Start-ScheduledTask -TaskName "VCMS PM2 User"
+  schtasks /Query /TN "VCMS PM2 User" /V /FO LIST
+
+The existing installer filename is retained for compatibility. The task uses
+the current Windows identity and limited privileges, not a hardcoded account.
+It runs at user logon after boot, not before login. It calls start and therefore
+runs Vite build at EVERY logon. Docker Desktop must run for database services.
+
+Locate tasks:
+  taskschd.msc
+
+Remove user task:
+  PowerShell -ExecutionPolicy Bypass -File .\scripts\uninstall-pm2-windows-startup-task-aiims.ps1 -TaskName "VCMS PM2 User"
+
+Old SYSTEM migration (one-time Administrator Command Prompt):
+  schtasks /Delete /TN "VCMS PM2" /F
+  schtasks /Query /TN "VCMS PM2"
+  netstat -ano | findstr :3000
+
+Deleting the task does NOT stop an existing SYSTEM PM2 daemon. Verify the
+listener and parent process before stopping the old daemon tree. Killing just
+the app can cause a new PID. Do not trust stale pm2.pid files or kill all Node
+processes. Regular users cannot stop SYSTEM processes.
+
+Use the local-user script consistently to select the matching PM2_HOME.
+PowerShell syntax:
+  $env:PM2_HOME = "$env:LOCALAPPDATA\vcms-pm2"
+CMD syntax:
+  set "PM2_HOME=%LOCALAPPDATA%\vcms-pm2"
+Run local pm2.cmd from the project root. Build/log directories must be writable.
+
+Docker services (databases/EHRbase, NOT the app):
+  docker compose up -d
+  docker compose ps
+
+Updates: back up first, stop the app before replacing dependencies/builds,
+preserve .env, git pull --ff-only, git submodule update --init --recursive,
+npm.cmd ci, then start and inspect build output, status, login, and printing.
+Review schema changes separately. Do not blindly run db:push or seed on an
+existing database; seed resets seeded passwords.
+
+Development: npm run dev normally uses localhost:5173. Configure ORIGIN for
+the server being tested. Localhost cookies can be shared across ports.
+An empty PEC list previously recovered after logging in again; 22 PECs and
+valid allocations remained in the database. Exact session cause was unproven.
+Use Logout then log in again when checking session behavior.
+
+QZ Tray: customized runtime zip.dll was blocked by Code Integrity with
+Smart App Control On. Antivirus exclusions do not resolve that policy block.
+Track trusted signing of the custom executable/runtime; do not disable
+security as a deployment step.
+
+Full setup, migration, backup and restore notes:
+  docs/standards/windows-deployment.md

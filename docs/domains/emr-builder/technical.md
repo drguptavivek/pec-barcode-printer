@@ -1,0 +1,108 @@
+---
+title: EMR Builder Technical Blueprint
+status: draft
+owner: engineering
+last_reviewed: 2026-05-09
+---
+
+# EMR Builder Technical Blueprint
+
+## Module Boundary
+
+Builder implementation should live under:
+
+```text
+src/lib/server/modules/emr-builder/
+  emr-builder.schemas.ts
+  emr-builder.service.ts
+  emr-builder.repository.ts
+  emr-builder.types.ts
+```
+
+Builder routes may call Builder service/controller entrypoints. They must not import Builder repositories directly.
+
+The Builder may create and publish clinical definitions. It must not mutate runtime patient records, encounters, signed notes, or executed pathway state.
+
+## No SurveyJS Creator
+
+The initial Builder must not use SurveyJS Creator. The administrative experience should be purpose-built for VCMS so it can enforce the project architecture, privilege registry, audit logging, validation model, and clinical immutability rules.
+
+## Definition Model
+
+Builder-managed definitions should be versioned. Expected definition families include:
+
+- clinical sections
+- field definitions
+- validation rules
+- display grouping
+- note templates
+- care pathway nodes
+- branch conditions
+- manual override policies
+
+Draft definitions may be edited by privileged Builder users. Published definitions are immutable and are referenced by runtime records. Changes after publication require a new version.
+
+## Runtime Contract
+
+Runtime code consumes only published definitions through service contracts. Runtime behavior must be reproducible from the stored definition version and persisted runtime inputs.
+
+Builder drafts, unpublished validation experiments, and retired definitions must not leak into runtime screens unless explicitly requested by a Builder administrator in a Builder context.
+
+## openEHR / EHRbase Boundary
+
+VCMS should use EHRbase as the openEHR Clinical Data Repository. The Builder must not implement its own openEHR persistence engine, canonical Reference Model storage, Operational Template processor, validation engine, or AQL engine.
+
+The VCMS responsibility is the Svelte-openEHR bridge:
+
+- author VCMS form definitions, reusable fields, reusable fragments, and reusable option sets;
+- store mapping metadata for openEHR archetypes, templates, Web Template flat paths, Reference Model node types, and data value types;
+- produce definition payloads that can later emit flat Web Template composition data for EHRbase;
+- keep authentication, privileges, patient lookup, local workflow configuration, and runtime screen orchestration inside VCMS.
+
+The EHRbase responsibility is the clinical source of truth:
+
+- store openEHR `COMPOSITION` records and their correction/amendment versions;
+- validate submitted compositions against uploaded templates;
+- expose openEHR REST APIs and AQL query behavior;
+- support longitudinal clinical organization through openEHR structures such as folders/directories and instruction/action entries where appropriate.
+
+Patient identity remains a VCMS concern at this stage. VCMS should keep the local patient or visit identifier to `ehr_id` linkage in its own database and pass only the needed EHRbase identifiers to composition-save workflows.
+
+New clinical events, such as follow-up visits after cataract surgery, should normally create new event compositions. Composition updates should be reserved for correcting or amending the same clinical document, not for recording a later visit.
+
+Registration and workflow data should be split deliberately:
+
+- Local demographic and operational lookup data stays in VCMS/PostgreSQL, including patient search fields, phone numbers, operational PEC/camp identifiers, billing-like values, and local workflow configuration.
+- Clinical observations, evaluations, instructions, actions, and encounter documents should be saved to EHRbase through mapped templates.
+- Referral-like workflows should use VCMS UI/work queues for task orchestration while persisting the clinical intent and fulfilment as mapped openEHR instruction/action composition content where the template supports it.
+
+## Data Dictionary
+
+The Builder data dictionary is the repository of reusable clinical building blocks. It contains:
+
+- **Fields**: one clinical data point with label, field name, type, validation, input behavior, coding, and openEHR mapping.
+- **Option sets**: reusable choices with stable values, labels, coding, and optional openEHR mappings per option.
+- **Fragments**: reusable groups of fields and/or sections that can be inserted into a form together.
+
+Dictionary assets are versioned independently from forms. Form fields inserted from the dictionary should keep a `dictionaryRef` snapshot so a published form is reproducible even after the source dictionary asset changes.
+
+## XLSForm Import Coverage for PEC Forms
+
+The current `src/lib/server/modules/xlsform-import/` implementation is fixture-driven so the four PEC XLSForm forms can be imported without the xlsx parser dependency:
+
+- `src/lib/server/modules/xlsform-import/fixtures/pec-opd-register.json`
+- `src/lib/server/modules/xlsform-import/fixtures/reported-patients-record.json`
+- `src/lib/server/modules/xlsform-import/fixtures/cataract-surgery-record.json`
+- `src/lib/server/modules/xlsform-import/fixtures/cataract-followup-record.json`
+
+Each form currently maps to `EmrNoteDefinition` with section nesting (`begin_group` / `end_group`), basic field type translation, static choice metadata, and `clinical_worklist` sources for entity handoff lists.
+
+## Unsupported XLSForm Semantics (Documented)
+
+- **Calculation / default / instance fields**: not executed in EMR Builder; recorded as `unsupported-type` issues (`calculation`), but definition fields are intentionally omitted.
+- **`relevant` expressions**: not translated to EMR visibility rules yet. Recorded as `unsupported-expression` (`group-relevant`, `relevant-expression`) on import.
+- **`constraint` expressions**: numeric lower/upper bound patterns are parsed into `validation.min`/`validation.max` when possible (for simple comparisons). All other constraint logic is recorded as `unsupported-expression`.
+- **`choice_filter` / dynamic filter references**: not mapped to runtime filtering yet; recorded as `unsupported-filter`.
+- **Entity handoff metadata**: `entity` sheet rows map to `clinical_worklist` source metadata when available (`source_file`, `label_template`, `create_if`, `handoff`). If metadata is absent, a `unsupported-handoff` issue is raised and only best-effort defaults are used.
+- **Identity and name normalization**: labels are truncated for storage safety (`label <= 200`, help text `<= 500`), and IDs are slugified/uniquified to stable `field.key` values.
+- **Unsupported `select_*` variants**: unsupported or unknown field types are downgraded to `text` with an `unsupported-type` issue for manual follow-up.

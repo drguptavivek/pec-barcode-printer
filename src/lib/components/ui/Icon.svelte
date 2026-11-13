@@ -1,0 +1,67 @@
+<script lang="ts">
+	type IconName =
+		| 'home'
+		| 'barcode'
+		| 'history'
+		| 'skip'
+		| 'settings'
+		| 'users'
+		| 'database'
+		| 'forms'
+		| 'edit'
+		| 'preview'
+		| 'upload'
+		| 'refresh';
+
+	type Props = {
+		name: IconName;
+		size?: number;
+		label?: string;
+	};
+
+	let { name, size = 18, label }: Props = $props();
+	const paths: Record<IconName, string> = {
+		home: 'M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3V10.5Z',
+		barcode:
+			'M4 5h1.5v14H4V5Zm3 0h3v14H7V5Zm4.5 0H13v14h-1.5V5Zm3 0H18v14h-3.5V5Zm5 0H21v14h-1.5V5Z',
+		history:
+			'M4 12a8 8 0 1 0 2.34-5.66L4 8.68V3H2v9h9v-2H5.41l2.35-2.24A6 6 0 1 1 6 12H4Zm7-4h2v5l4 2-.9 1.8-5.1-2.55V8Z',
+		skip: 'M5 5h2v14H5V5Zm4.5 1.5L17 12l-7.5 5.5v-11ZM18 5h2v14h-2V5Z',
+		settings:
+			'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm8.94 3.06-2.03-.34a7.63 7.63 0 0 0-.64-1.54l1.2-1.68-1.97-1.97-1.68 1.2c-.49-.26-1-.47-1.54-.64l-.34-2.03h-2.88l-.34 2.03c-.54.17-1.05.38-1.54.64l-1.68-1.2L5.53 7.5l1.2 1.68c-.26.49-.47 1-.64 1.54l-2.03.34v2.88l2.03.34c.17.54.38 1.05.64 1.54l-1.2 1.68 1.97 1.97 1.68-1.2c.49.26 1 .47 1.54.64l.34 2.03h2.88l.34-2.03c.54-.17 1.05-.38 1.54-.64l1.68 1.2 1.97-1.97-1.2-1.68c.26-.49.47-1 .64-1.54l2.03-.34v-2.88Z',
+		users:
+			'M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm7-1a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 20a6.5 6.5 0 0 1 13 0v1H2v-1Zm12.5-7c3.04 0 5.5 2.46 5.5 5.5V21h-3v-1a8.45 8.45 0 0 0-2.8-6.3c.1-.23.2-.46.3-.7Z',
+		database:
+			'M12 3C7 3 4 4.8 4 7v10c0 2.2 3 4 8 4s8-1.8 8-4V7c0-2.2-3-4-8-4Zm0 2c4 0 6 1.2 6 2s-2 2-6 2-6-1.2-6-2 2-2 6-2Zm0 14c-4 0-6-1.2-6-2v-1.5c1.4.9 3.5 1.5 6 1.5s4.6-.6 6-1.5V17c0 .8-2 2-6 2Zm0-4c-4 0-6-1.2-6-2v-1.5c1.4.9 3.5 1.5 6 1.5s4.6-.6 6-1.5V13c0 .8-2 2-6 2Z',
+		forms:
+			'M6 3h9l3 3v15H6V3Zm8 1.5V7h2.5L14 4.5ZM8 9h8v2H8V9Zm0 4h8v2H8v-2Zm0 4h5v2H8v-2ZM4 6h1v17h11v-1H6a2 2 0 0 1-2-2V6Z',
+		edit: 'M5 18.5V21h2.5L18.3 10.2l-2.5-2.5L5 18.5Zm14.1-10.1 1.4-1.4a1.4 1.4 0 0 0 0-2l-1.5-1.5a1.4 1.4 0 0 0-2 0l-1.4 1.4 3.5 3.5Z',
+		preview:
+			'M12 5c5 0 8.5 4.2 9.7 6.1a1.7 1.7 0 0 1 0 1.8C20.5 14.8 17 19 12 19s-8.5-4.2-9.7-6.1a1.7 1.7 0 0 1 0-1.8C3.5 9.2 7 5 12 5Zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z',
+		upload: 'M12 3 5.5 9.5 6.9 10.9 11 6.8V17h2V6.8l4.1 4.1 1.4-1.4L12 3ZM5 19v2h14v-2H5Z',
+		refresh:
+			'M12 5a7 7 0 0 1 6.32 4H16l3.5 3.5L23 9h-2.55A9 9 0 0 0 4.1 5.6l1.42 1.42A6.96 6.96 0 0 1 12 5Zm-7.5 6.5L1 15h2.55A9 9 0 0 0 19.9 18.4l-1.42-1.42A7 7 0 0 1 5.68 15H8l-3.5-3.5Z'
+	};
+</script>
+
+<svg
+	class="icon"
+	width={size}
+	height={size}
+	viewBox="0 0 24 24"
+	role={label ? 'img' : 'presentation'}
+	aria-label={label}
+	aria-hidden={label ? undefined : 'true'}
+	focusable="false"
+>
+	<path d={paths[name]} />
+</svg>
+
+<style>
+	.icon {
+		display: inline-block;
+		flex: none;
+		fill: currentcolor;
+		vertical-align: -0.18em;
+	}
+</style>

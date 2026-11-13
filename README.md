@@ -1,0 +1,151 @@
+---
+title: Vision Centre Barcode Management System
+status: draft
+owner: engineering
+last_reviewed: 2026-11-13
+---
+
+# Vision Centre Management System
+
+Modern management application for outreach centres and Vision Centres/Primary Eye Care Centres (PECs).
+
+## Purpose
+
+In its first implementation, the system generates unique barcode stickers for pre-printed OPD cards. Staff can paste pre-printed stickers on OPD cards, manually write patient demographics, and later scan the barcode for follow-up workflows. Patient linkage is planned as a future phase.
+
+Later on the plan is to expand to include and support offline-first patient registration data capture and medical records and track patients over time including FHIR compliant bundle generation as per ABDM norms.
+
+## Barcode Format
+
+```text
+PP-YY-SSSSSS
+```
+
+- `PP`: PEC code, left-padded to 2 digits.
+- `YY`: manually selected barcode year.
+- `SSSSSS`: serial number, left-padded to 6 digits.
+
+Example:
+
+```text
+04-26-000001
+```
+
+## Planned Stack
+
+- SvelteKit + TypeScript
+- PostgreSQL
+- Drizzle ORM
+- Zod validation
+- Better Auth
+- Local ReBAC authorization using a TOML privilege registry
+- Browser/PDF, ZPL, and EPL barcode printing
+
+## Key Capabilities
+
+- Team and PEC master management.
+- User, role, and PEC allocation management.
+- Barcode batch generation for allocated PECs.
+- Reprint support for failed print jobs.
+- Manual sequence reset/set-next-number workflows.
+- Offline-issued barcode reservation/skipping.
+- Configurable printer templates for browser/PDF, ZPL, and EPL.
+- Runtime logs, SQL error logs, and audit logs.
+
+## Architecture Principles
+
+- Routes stay thin.
+- Services contain business logic.
+- Repositories contain database access only.
+- Authorization is centralized.
+- Validation is shared and schema-driven.
+- Business logic is developed using TDD.
+- Every API route has an explicit rate-limit policy.
+
+## Repository Structure
+
+```text
+.plans/             Dated, folder-wise plans and implementation statuses
+docs/domains/       Domain/blueprint documentation
+docs/standards/     Cross-cutting engineering standards
+docs/user/          User-facing documentation indexes
+src/                SvelteKit application source
+```
+
+## Local Development
+
+Database configuration is component-based in `.env`:
+
+```powershell
+DB_HOST="localhost"
+DB_PORT="5400"
+DB_NAME="local"
+DB_USER="root"
+DB_PASSWORD="mysecretpassword"
+```
+
+Docker Compose uses `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`. Drizzle, the app runtime, and the seed script build their PostgreSQL connection URL from the same values.
+
+```powershell
+npm install
+npm run db:start
+npm run db:push
+npm run seed
+npm run dev
+```
+
+The repository includes `compose.yaml` for local PostgreSQL.
+
+The same compose file also starts a local EHRbase openEHR CDR and its dedicated PostgreSQL database. EHRbase is available at:
+
+```text
+http://localhost:8080/ehrbase/rest/openehr/v1
+```
+
+The local EHRbase credentials are defined in `.env` through `EHRBASE_AUTH_USER`, `EHRBASE_AUTH_PASSWORD`, `EHRBASE_ADMIN_USER`, and `EHRBASE_ADMIN_PASSWORD`. Keep the EHRbase database separate from the VCMS application database.
+
+Open `http://localhost:5173` and sign in with the local development account:
+
+```text
+admin@example.test / ChangeMe123!
+```
+
+The seed script creates the example account. Disable the development fallback with `DEV_LOGIN_ENABLED="false"` and replace example credentials before deployment. Rerunning seed resets seeded passwords.
+
+## Validation
+
+```powershell
+npm run lint
+npm run check
+npm run test:unit -- --run
+npm run build
+```
+
+## Windows Startup
+
+Run as the regular Windows user from the project root. Clone with `git clone --recurse-submodules https://github.com/drguptavivek/pec-barcode-printer.git` to include the Tray submodule.
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File .\scripts\vcms-local-user.ps1 start
+PowerShell -ExecutionPolicy Bypass -File .\scripts\install-pm2-windows-startup-task-aiims.ps1 -TaskName "VCMS PM2 User"
+```
+
+The task runs at current-user logon after boot with limited privileges. Both `start` and `restart` build with Vite, including every scheduled logon. PM2 state is in `%LOCALAPPDATA%\vcms-pm2`; the app serves port 3000. Docker Compose runs the databases and EHRbase, not the app. PM2 starts `scripts/start-production.mjs`, which loads `.env` and imports `build/index.js`. See [Windows deployment](docs/standards/windows-deployment.md) and [Windows commands](WINDOWS.txt) for setup, upgrades, and SYSTEM migration.
+
+## Dependency Maintenance
+
+Backup file contents and recovery commands are documented in [Backup and restore](docs/standards/backup-restore.md).
+
+Back up databases, configuration, and keys with `npm run backup` (Node.js and Docker; Windows/Linux). See [Windows deployment](docs/standards/windows-deployment.md#backup) for scope, external key inclusion, and secure storage. The default `backups/` directory is excluded from Git.
+
+```powershell
+npm run deps:check
+npm run deps:update
+npm run sbom
+```
+
+`deps:check` uses a short cooldown before proposing newly published package versions and filters updates through package peer dependency constraints. `sbom` writes a reproducible CycloneDX JSON SBOM to `generated/sbom.cdx.json`.
+
+## Current Status
+
+Working SvelteKit application scaffold with PostgreSQL, Drizzle schema, seeded PEC data, admin login fallback for local development, barcode batch generation, ZPL/EPL/browser output, ReBAC checks, rate limiting, audit logging, and initial tests.
