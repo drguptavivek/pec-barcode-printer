@@ -113,7 +113,7 @@ Install QZ on the printing workstation and configure the app's QZ credentials, p
 Get the build from the fork's GitHub release (tag `v2.3.0-vcms.N`), built by its `vcms-jar` workflow:
 
 - Windows: `qz-tray-vcms-2.3.0-windows-x86_64.zip`. It is the payload of the official upstream-signed v2.3.0 installer with only `qz-tray.jar` replaced. Unzip, then in an Administrator PowerShell in that folder run `PowerShell -ExecutionPolicy Bypass -File .\install-from-zip.ps1`. It runs the same `preinstall`, `install` and `certgen` steps as the official installer into `C:\Program Files\QZ Tray` and starts QZ. Installing over an older build is fine; QZ data in `%APPDATA%\qz`, `C:\ProgramData\qz` and `%USERPROFILE%\.qz\trusted-root-certs` is kept.
-- macOS: `qz-tray-2.3.0.dmg` (aarch64 or x86_64), signed with the AIIMS Developer ID and notarized.
+- macOS: `qz-tray-vcms-2.3.0-macos-aarch64.dmg` (Apple silicon) or `qz-tray-vcms-2.3.0-macos-x86_64.dmg` (Intel), signed with the AIIMS Developer ID and notarized.
 
 Verify on Windows: `qz-tray.exe`, `runtime\bin\zip.dll` and `runtime\bin\java.dll` show a Valid signature from QZ Industries, LLC (`Get-AuthenticodeSignature`), then do a sample print. Re-run `install-from-zip.ps1` after any QZ upgrade, since an upstream installer replaces the VCMS jar.
 
