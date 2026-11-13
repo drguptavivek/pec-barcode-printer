@@ -164,8 +164,8 @@
 		{:else if trayTrust.status === 'unreachable'}
 			<p class="muted">Start the QZ Tray app so the local JSON endpoint is reachable.</p>
 			<p class="muted">
-				The GitHub release qz-tray.jar is an executable fat JAR. Keep it at a safe path and run it
-				with java -jar qz-tray.jar.
+				Windows: unzip the release zip and run install-from-zip.ps1 as Administrator. macOS: open
+				the signed DMG and drag QZ Tray to Applications.
 			</p>
 			<p>
 				<a href={qzTrayReleaseHref} target="_blank" rel="noreferrer">

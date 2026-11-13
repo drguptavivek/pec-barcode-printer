@@ -72,11 +72,9 @@ The endpoint returns public metadata only: built-in trust mode, trusted-root dir
 
 Strict deployments should enable `tray.strictmode=true`, provision only the VCMS root CA, and trust only VCMS-issued browser certificates.
 
-The VCMS GitHub release `qz-tray.jar` is an executable fat JAR containing QZ Tray classes and bundled dependencies. It does not need sibling `lib/` files from the repository. Workstations still need a local Java runtime, normal QZ runtime data under `~/.qz/`, and browser/system trust setup for QZ Tray's local HTTPS/WSS certificate. Keep the JAR at a safe local path and run it with:
+Install the VCMS build from the fork's GitHub releases (`v2.3.0-vcms.N`): on Windows the `qz-tray-vcms-2.3.0-windows-x86_64.zip` plus its `install-from-zip.ps1` (upstream-signed exe/DLLs with the VCMS `qz-tray.jar`), on macOS the signed and notarized `qz-tray-2.3.0.dmg`. Both bundle their own Java runtime and run QZ's `certgen` step for the local HTTPS/WSS certificate. See `docs/standards/windows-deployment.md`.
 
-```bash
-java -jar qz-tray.jar
-```
+The release `qz-tray.jar` is also an executable fat JAR. For development only, it can run with a local Java 25 runtime: `java -jar qz-tray.jar`.
 
 Do not commit generated private keys, issued signing certificates, local keychains, or workstation-specific QZ data.
 

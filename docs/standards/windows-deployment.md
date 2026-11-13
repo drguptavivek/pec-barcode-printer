@@ -108,6 +108,13 @@ An empty dashboard recovered after logging in again; the database still containe
 
 ## QZ Tray
 
-Install QZ on the printing workstation and configure the app's QZ credentials, printer selection, and template. vendor/qz-tray is a submodule pinned to a commit in the customized fork, not an installer. Normal app builds do not compile Java/QZ.
+Install QZ on the printing workstation and configure the app's QZ credentials, printer selection, and template. vendor/qz-tray is a submodule pinned to branch `vcms/v2.3.0` of the VCMS fork (drguptavivek/tray), which is upstream QZ Tray v2.3.0 plus the VCMS trusted root CA changes (Java only). Normal app builds do not compile Java/QZ.
 
-During troubleshooting, Code Integrity events 3077/3033 blocked the customized runtime's zip.dll. Installed zip.dll, java.dll, and qz-tray.exe signature checks reported an invalid or missing signer certificate; Smart App Control was On. An antivirus exclusion does not resolve that application-control block. Investigate trusted signing of the customized package and runtime; disabling security is not a deployment step.
+Get the build from the fork's GitHub release (tag `v2.3.0-vcms.N`), built by its `vcms-jar` workflow:
+
+- Windows: `qz-tray-vcms-2.3.0-windows-x86_64.zip`. It is the payload of the official upstream-signed v2.3.0 installer with only `qz-tray.jar` replaced. Unzip, then in an Administrator PowerShell in that folder run `PowerShell -ExecutionPolicy Bypass -File .\install-from-zip.ps1`. It runs the same `preinstall`, `install` and `certgen` steps as the official installer into `C:\Program Files\QZ Tray` and starts QZ. Installing over an older build is fine; QZ data in `%APPDATA%\qz`, `C:\ProgramData\qz` and `%USERPROFILE%\.qz\trusted-root-certs` is kept.
+- macOS: `qz-tray-2.3.0.dmg` (aarch64 or x86_64), signed with the AIIMS Developer ID and notarized.
+
+Verify on Windows: `qz-tray.exe`, `runtime\bin\zip.dll` and `runtime\bin\java.dll` show a Valid signature from QZ Industries, LLC (`Get-AuthenticodeSignature`), then do a sample print. Re-run `install-from-zip.ps1` after any QZ upgrade, since an upstream installer replaces the VCMS jar.
+
+Why: the earlier self-built installer signed its exe and runtime DLLs with a self-signed certificate. With Smart App Control On, Code Integrity events 3077/3033 blocked `zip.dll`. Smart App Control does not check `.jar` files, so keeping upstream's signed exe/DLLs and replacing only the jar avoids the block without our own Windows code-signing certificate. Antivirus exclusions do not resolve an application-control block, and disabling security is not a deployment step.

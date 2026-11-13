@@ -36,6 +36,7 @@ declare global {
 
 let scriptPromise: Promise<QzApi> | null = null;
 let securityConfigured = false;
+let connectPromise: Promise<void> | null = null;
 
 export async function listQzPrinters() {
 	const qz = await getQz();
@@ -78,7 +79,14 @@ async function getQz() {
 		configureQzSecurity(qz);
 		securityConfigured = true;
 	}
-	if (!qz.websocket.isActive()) await qz.websocket.connect();
+	// qz-tray.js 2.3+ reports isActive() false while CONNECTING and rejects a second connect(),
+	// so concurrent callers (e.g. listQzPrinters + getDefaultQzPrinter) must share one attempt.
+	if (!qz.websocket.isActive()) {
+		connectPromise ??= qz.websocket.connect().finally(() => {
+			connectPromise = null;
+		});
+		await connectPromise;
+	}
 	return qz;
 }
 

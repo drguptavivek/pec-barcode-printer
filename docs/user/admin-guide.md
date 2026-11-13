@@ -33,6 +33,6 @@ The Root CA PEM export is public because it contains only public trust material.
 
 The Direct Print Signing card checks QZ Tray's local trusted-root JSON endpoint from the browser and compares the active root CA fingerprints against the VCMS Root CA fingerprint. It reports whether integration is OK, whether the VCMS Root CA is missing, or whether QZ Tray is not reachable.
 
-If QZ Tray is not reachable, start the QZ Tray app. If the expected VCMS build is not installed, download `qz-tray.jar` from `https://github.com/drguptavivek/tray/releases`, keep it at a safe local path, and run it with `java -jar qz-tray.jar`. The release JAR is an executable fat JAR and does not require sibling `lib/` files, but it does require a local Java runtime.
+If QZ Tray is not reachable, start the QZ Tray app. If the expected VCMS build is not installed, download it from `https://github.com/drguptavivek/tray/releases`: on Windows unzip `qz-tray-vcms-2.3.0-windows-x86_64.zip` and run `install-from-zip.ps1` in an Administrator PowerShell; on macOS open `qz-tray-2.3.0.dmg` and drag QZ Tray to Applications. Both include their own Java runtime.
 
 The server must have `QZ_CREDENTIAL_ENCRYPTION_KEY` set before credentials can be saved, displayed, or used. For local development, `npm run qz:cert:dev` can still create PEM files for inspection, but runtime printing uses database-saved encrypted credentials only.

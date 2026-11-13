@@ -84,10 +84,16 @@ An empty PEC list previously recovered after logging in again; 22 PECs and
 valid allocations remained in the database. Exact session cause was unproven.
 Use Logout then log in again when checking session behavior.
 
-QZ Tray: customized runtime zip.dll was blocked by Code Integrity with
-Smart App Control On. Antivirus exclusions do not resolve that policy block.
-Track trusted signing of the custom executable/runtime; do not disable
-security as a deployment step.
+QZ Tray (v2.3.0, VCMS build):
+  Download qz-tray-vcms-2.3.0-windows-x86_64.zip from
+  https://github.com/drguptavivek/tray/releases, unzip, then in an
+  Administrator PowerShell inside that folder:
+  PowerShell -ExecutionPolicy Bypass -File .\install-from-zip.ps1
+The zip is the official upstream-signed installer payload with only
+qz-tray.jar replaced, so Smart App Control accepts the exe/DLLs. The old
+self-built installer was blocked (zip.dll, Code Integrity 3077/3033).
+Installing over an old version keeps QZ data. Re-run the script after any
+QZ upgrade. Do not disable security as a deployment step.
 
 Full setup, migration, backup and restore notes:
   docs/standards/windows-deployment.md
